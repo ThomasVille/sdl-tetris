@@ -1,4 +1,6 @@
 sdl-tetris
 ==========
 
-A simple tetris game built with the SDL.
+Compilation :
+
+gcc tetris.c -lm -lSDLmain -lSDL -o tetris
