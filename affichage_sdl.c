@@ -1,4 +1,4 @@
-#define HAUTEUR 20
+#define HAUTEUR 22
 #define LARGEUR 10
 #define WIDTH 800
 #define HEIGHT 600
@@ -35,7 +35,8 @@ void drawGrid(SDL_Surface *screen, int coteBloc)
 			setPixel(screen, x,y, SDL_MapRGB(screen->format, 100,100,100));
 		}
 	}
-	for(x = CADRE; y < CADRE+LARGEUR*coteBloc+1; x += coteBloc)
+	
+	for(x = CADRE; x < CADRE+LARGEUR*coteBloc+1; x += coteBloc)
 	{
 		for(y = CADRE; y < CADRE+HAUTEUR*coteBloc; y++)
 		{

@@ -8,11 +8,10 @@
 
 
 void addPiece(GameMatrix*, int[NB_PIECES][5][5]);
-void moveLeft(Piece *piece);
-void moveDown(Piece *piece);
-void moveRight(Piece *piece);
+int moveLeft(GameMatrix*);
+int moveRight(GameMatrix*);
+int moveDown(GameMatrix*);
 int testCollisions(Piece piece);
-void drawPiece(SDL_Surface *screen, Piece piece);
 int **createTable(int nbLin, int nbCol);
 
 /* DEBUG */
@@ -24,13 +23,13 @@ int main(int argc, char** argv)
 	int i = 0,j = 0;
 
 	// Tableau qui représente toutes les pièces possibles
-	int pieces[NB_PIECES][5][5] = {{{0,0,10,0,0},{0,0,10,0,0},{0,0,10,0,0},{0,0,10,0,0},{0,0,0,0,0}},
-								   {{0,0,0,0,0},{0,20,20,0,0},{0,20,20,0,0},{0,0,0,0,0},{0,0,0,0,0}},
-								   {{0,0,0,0,0},{0,0,0,0,0},{0,30,30,30,0},{0,0,30,0,0},{0,0,0,0,0}},
-								   {{0,0,0,0,0},{0,0,40,0,0},{0,0,40,0,0},{0,0,40,40,0},{0,0,0,0,0}},
-								   {{0,0,0,0,0},{0,0,50,0,0},{0,0,50,0,0},{0,50,50,0,0},{0,0,0,0,0}},
-								   {{0,0,0,0,0},{0,0,60,0,0},{0,60,60,0,0},{0,60,0,0,0},{0,0,0,0,0}},
-								   {{0,0,0,0,0},{0,0,70,0,0},{0,0,70,70,0},{0,0,0,70,0},{0,0,0,0,0}}};
+	int pieces[NB_PIECES][5][5] = {{{0,0,10,0,0},{0,0,10,0,0},{0,0,11,0,0},{0,0,10,0,0},{0,0,0,0,0}},
+								   {{0,0,0,0,0},{0,20,20,0,0},{0,20,21,0,0},{0,0,0,0,0},{0,0,0,0,0}},
+								   {{0,0,0,0,0},{0,0,0,0,0},{0,30,31,30,0},{0,0,30,0,0},{0,0,0,0,0}},
+								   {{0,0,0,0,0},{0,0,40,0,0},{0,0,41,0,0},{0,0,40,40,0},{0,0,0,0,0}},
+								   {{0,0,0,0,0},{0,0,50,0,0},{0,0,51,0,0},{0,50,50,0,0},{0,0,0,0,0}},
+								   {{0,0,0,0,0},{0,0,60,0,0},{0,60,61,0,0},{0,60,0,0,0},{0,0,0,0,0}},
+								   {{0,0,0,0,0},{0,0,70,0,0},{0,0,71,70,0},{0,0,0,70,0},{0,0,0,0,0}}};
 
 	/** Variables SDL **/
 	SDL_Surface *screen = NULL;
@@ -45,7 +44,7 @@ int main(int argc, char** argv)
 	}
  
 	atexit(SDL_Quit);
-	screen = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE || SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_HWSURFACE || SDL_DOUBLEBUF);
  
 	if (screen == NULL) {
 		fprintf(stderr, "Impossible d'activer le mode graphique : %s\n", SDL_GetError());
@@ -61,7 +60,6 @@ int main(int argc, char** argv)
 	surface->height = 22;
 	surface->width = 10;
 	surface->surf = createTable(surface->height, surface->width);
-	
 	// Calcul de la largeur d'un bloc en fonction des dimensions de la fenêtre
 	surface->coteBloc = (HEIGHT-CADRE*2)/surface->height;
 	
@@ -69,6 +67,7 @@ int main(int argc, char** argv)
 	for(i = 0; i < surface->height; i++)
 		for(j = 0; j < surface->width; j++)
 			surface->surf[i][j] = 0;
+				
 			
 	surface->colors[0] = SDL_MapRGB(screen->format, 255,0,0); // Rouge
 	surface->colors[1] = SDL_MapRGB(screen->format, 0,0,255); // Bleu
@@ -78,8 +77,11 @@ int main(int argc, char** argv)
 	surface->colors[5] = SDL_MapRGB(screen->format, 0,255,255); // Cyan
 	surface->colors[6] = SDL_MapRGB(screen->format, 0,255,0); // Vert
 	
+	/* DEBUG */
+	surface->surf[21][5] = 1;
+	
 	addPiece(surface, pieces);
-	/** S'arrêtera quand le tableau est plein **/
+	/** TODO S'arrêtera quand le tableau sera plein **/
 	do
 	{
 		/* Gère les évenements */
@@ -91,13 +93,11 @@ int main(int argc, char** argv)
 					switch(event.key.keysym.sym)
 					{
 						case SDLK_LEFT:
-							//deplacerGauche(piece_qui_descend);
+							moveLeft(surface);
 							break;
 						case SDLK_RIGHT:
-							//deplacerDroite(piece_qui_descend);
+							moveRight(surface);
 							
-							/* DEBUG */
-							addRandElem(surface);
 							break;
 						case SDLK_ESCAPE:
 							continuer = 0;
@@ -116,9 +116,9 @@ int main(int argc, char** argv)
 				setPixel(screen, i,j,SDL_MapRGB(screen->format, 100,100,100));
 			}
 		}*/
-		//dessinerGrille(screen, coteBloc);
-		//deplacerBas(piece_qui_descend);
-		//dessinerPiece(screen, *piece_qui_descend);
+		drawGrid(screen, surface->coteBloc);
+		moveDown(surface);
+		
 		drawGameMatrix(screen, surface);
 		
 		SDL_Flip(screen);
@@ -146,38 +146,112 @@ void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 		
 }
 
-void moveLeft(Piece *piece)
+int moveLeft(GameMatrix *surface)
 {
-	piece->x--;
-	if(testCollisions(*piece))
-		piece->x++;
-
-}
-
-void moveDown(Piece *piece)
-{
-	piece->y++;
-	if(testCollisions(*piece))
-		piece->y--;
-}
-void moveRight(Piece *piece)
-{
-	piece->x++;
-	if(testCollisions(*piece))
-		piece->x--;
-
-}
-int testCollisions(Piece piece)
-{
-	if(piece.x < 0 || piece.x >= LARGEUR || piece.y < 0 || piece.y >= HAUTEUR)
-		return 1;
+	int x, y;
+	/* Vérifie que la pièce n'est pas au bord */
+	for(y = 0; y < surface->height; y++)
+		if(surface->surf[y][0] >= 10)
+			return 1;
+	
+	
+	
+	/* Parcours chaque lignes du tableau de droite à gauche et vérifie que
+	 * l'on a pas une case mobile suivie d'une case fixe */
+	 for(y = 0; y < surface->height; y++)
+		for(x = surface->width-2; x >= 0; x--)
+			if(surface->surf[y][x+1] >= 10 && surface->surf[y][x] < 10 && surface->surf[y][x] != 0)
+			{
+				printf("Bloqué par un bloc fixe\n");
+				return 1;
+			}
+			
+			
+	/* Parcours le tableau depuis la gauche pour déplacer les cases une par une */
+	for(y = 0; y < surface->height; y++)
+		for(x = 1; x < surface->width; x++)
+			if(surface->surf[y][x-1] == 0 && surface->surf[y][x] >= 10) // Si on est sur une case mobile à droite d'une case vide
+			{
+				// Copie l'ancienne case dans la nouvelle
+				surface->surf[y][x-1] = surface->surf[y][x];
+				// Supprime l'ancienne
+				surface->surf[y][x] = 0;
+			}
 	return 0;
-		
+}
+int moveRight(GameMatrix *surface)
+{
+	int x, y;
+	/* Vérifie que la pièce n'est pas au bord */
+	for(y = 0; y < surface->height; y++)
+		if(surface->surf[y][surface->width-1] >= 10)
+			return 1;
+	
+	
+	/* Parcours chaque lignes du tableau de gauche à droite et vérifie que
+	 * l'on a pas une case mobile suivie d'une case fixe */
+	 for(y = 0; y < surface->height; y++)
+		for(x = 1; x < surface->width; x++)
+			if(surface->surf[y][x-1] >= 10 && surface->surf[y][x] < 10 && surface->surf[y][x] != 0)
+			{
+				printf("Bloqué par un bloc fixe\n");
+				return 1;
+			}
+	
+	
+	/* Parcours le tableau depuis la droite pour déplacer les cases une par une */
+	for(y = 0; y < surface->height; y++)
+		for(x = surface->width-2; x >= 0; x--) // -1 pour être à la fin du tableau et -1 pour ne pas parcourir la dernière case
+			if(surface->surf[y][x+1] == 0 && surface->surf[y][x] >= 10) // Si on est sur une case mobile à gauche d'une case vide
+			{
+				// Copie l'ancienne case dans la nouvelle
+				surface->surf[y][x+1] = surface->surf[y][x];
+				// Supprime l'ancienne
+				surface->surf[y][x] = 0;
+			}
+	return 0;
 }
 
-void drawPiece(SDL_Surface *screen, Piece piece)
+int moveDown(GameMatrix *surface)
 {
-	//drawSquare(screen, piece.cote, piece.x, piece.y);
+	int x, y;
+	/* Vérifie qu'on peut descendre */
+	
+	// Vérifie qu'on est pas arrivé au sol
+	for(x = 0; x < surface->width; x++)
+	{
+		printf(" %d ", surface->surf[surface->height-1][x]);
+		if(surface->surf[surface->height-1][x] >= 10)
+		{
+			printf("Fin de la ligne\n");
+			return 2;
+		}
+	}
+	printf("\n");
+	
+	
+	/* Parcours chaque colonne du tableau de haut en bas et vérifie que
+	 * l'on a pas une case mobile suivie d'une case fixe */
+	 for(x = 0; x < surface->width; x++)
+		for(y = 1; y < surface->height; y++)
+			if(surface->surf[y-1][x] >= 10 && surface->surf[y][x] < 10 && surface->surf[y][x] != 0)
+			{
+				printf("Bloqué par un bloc fixe\n");
+				return 1;
+			}
+	
+	
+	/* Parcours le tableau depuis le bas pour déplacer les cases une par une */
+	for(x = 0; x < surface->width; x++)
+		for(y = surface->height-2; y >= 0; y--) // -1 pour être à la fin du tableau et -1 pour ne pas parcourir la dernière case
+			if(surface->surf[y+1][x] == 0 && surface->surf[y][x] >= 10) // Si on est sur une case mobile au dessus d'une case vide
+			{
+				// Copie l'ancienne case dans la nouvelle
+				surface->surf[y+1][x] = surface->surf[y][x];
+				// Supprime l'ancienne
+				surface->surf[y][x] = 0;
+			}
+	return 0;
 }
 
 // Crée un tableau à 2 dimensions
