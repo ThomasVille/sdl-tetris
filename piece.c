@@ -16,13 +16,12 @@ struct Piece
 };
 typedef struct Piece Piece;
 
-/** Types :
-- 0 : T
-- 1 : L
-- 2 : L inversé
-- 3 : I
-- 4 : Z
-- 5 : Z inversé
-- 6 : carré
-- 7 : carré simple
+/** Couleurs des pièces
+- 0		I		rouge
+- 1 	O		bleu
+- 2 	T		brun
+- 3 	L		magenta
+- 4 	J		blanc
+- 5 	Z		cyan
+- 6 	S		vert
 **/

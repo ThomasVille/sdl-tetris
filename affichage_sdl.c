@@ -3,7 +3,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 #define CADRE 10
-#define NB_PIECES 2
+#define NB_PIECES 7
 
 void setPixel(SDL_Surface *screen, int x, int y, Uint32 coul)
 {
@@ -11,13 +11,13 @@ void setPixel(SDL_Surface *screen, int x, int y, Uint32 coul)
 }
 
 // Dessine un carré dans le repère de la surface de jeu
-void drawSquare(SDL_Surface *screen, int coteBloc, int x, int y)
+void drawSquare(SDL_Surface *screen, int coteBloc, Uint32 color, int x, int y)
 {
 	SDL_Rect blitrect = {CADRE + x*coteBloc,CADRE + y*coteBloc,0,0};
 	SDL_Surface *carre = NULL;
 	// TODO Calculer width et length avant
-	carre = SDL_CreateRGBSurface(0,coteBloc,coteBloc,32, 255,255,255,255);
-	SDL_FillRect(carre, NULL, SDL_MapRGB(screen->format, 255, 255, 255));
+	carre = SDL_CreateRGBSurface(0,coteBloc,coteBloc,32, 0, 0, 0,255);
+	SDL_FillRect(carre, NULL, color);
 	SDL_BlitSurface(carre,NULL, screen, &blitrect);
 	
 	SDL_FreeSurface(carre);
@@ -46,13 +46,17 @@ void drawGrid(SDL_Surface *screen, int coteBloc)
 // Dessine la surface de jeu
 void drawGameMatrix(SDL_Surface *screen, GameMatrix *surface)
 {
-	int x, y;
+	int x, y, val, colorIndex;
 	for(y = 0; y < HAUTEUR; y++)
 	{
 		for(x = 0; x < LARGEUR; x++)
 		{
-			if(surface->surf[y][x] != 0)
-				drawSquare(screen, surface->coteBloc, x, y);
+			val = surface->surf[y][x];
+			if(val != 0)
+			{
+				colorIndex = val/10;
+				drawSquare(screen, surface->coteBloc,surface->colors[colorIndex-1], x, y);
+			}
 		}
 	}
 }
