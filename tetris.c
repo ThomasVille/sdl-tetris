@@ -25,6 +25,11 @@ int main(int argc, char** argv)
 	int continuer = 1;
 	int i = 0,j = 0;
 	
+	// Initialisation du tableau à 0
+	for(i = 0; i < HAUTEUR; i++)
+		for(j = 0; j < LARGEUR; j++)
+			surface_jeu[i][j] = 0;
+	
 	/** Graphique **/
 	// Calcul de la largeur d'un bloc en fonction des dimensions de la fenêtre
 	int coteBloc = (HEIGHT-CADRE*2)/HAUTEUR;
