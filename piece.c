@@ -1,5 +1,13 @@
 /** Catalogues des pièces du Tetris **/
 
+struct SurfaceJeu
+{
+	int hauteur, largeur;
+	int coteBloc;
+	int **surf;
+};
+typedef struct SurfaceJeu SurfaceJeu;
+
 struct Piece
 {
 	int x, y;

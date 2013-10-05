@@ -35,15 +35,15 @@ void dessinerGrille(SDL_Surface *screen, int coteBloc)
 	}
 }
 
-void dessinerSurfaceJeu(SDL_Surface *screen, int surface[HAUTEUR][LARGEUR], int coteBloc)
+void dessinerSurfaceJeu(SDL_Surface *screen, SurfaceJeu *surface)
 {
 	int x, y;
 	for(y = 0; y < HAUTEUR; y++)
 	{
 		for(x = 0; x < LARGEUR; x++)
 		{
-			if(surface[y][x] != 0)
-				dessinerCarre(screen, coteBloc, x, y);
+			if(surface->surf[y][x] != 0)
+				dessinerCarre(screen, surface->coteBloc, x, y);
 		}
 	}
 }
