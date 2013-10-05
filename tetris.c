@@ -6,7 +6,7 @@
 #include "affichage_sdl.c"
 
 
-void nouvellePiece(SurfaceJeu*);
+void nouvellePiece(SurfaceJeu*, int[NB_PIECES][5][5]);
 void deplacerGauche(Piece *piece);
 void deplacerBas(Piece *piece);
 void deplacerDroite(Piece *piece);
@@ -21,7 +21,11 @@ int main(int argc, char** argv)
 {
 	int continuer = 1;
 	int i = 0,j = 0;
-	
+
+	// Tableau qui représente toutes les pièces possibles
+	int pieces[NB_PIECES][5][5] = {{{0,0,0,0,0},{0,0,10,0,0},{0,0,100,0,0},{0,0,10,0,0},{0,0,10,0,0}},
+								   {{0,0,0,0,0},{0,10,0,0,0},{0,10,100,0,0},{0,0,10,0,0},{0,0,0,0,0}}};
+
 	/** Variables SDL **/
 	SDL_Surface *screen = NULL;
 	SDL_Event event;
@@ -62,7 +66,7 @@ int main(int argc, char** argv)
 	/*************************** Initialisation SDL	***************************/ 
 
 	
-	nouvellePiece(surface);
+	nouvellePiece(surface, pieces);
 	/** S'arrêtera quand le tableau est plein **/
 	do
 	{
@@ -116,9 +120,18 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-void nouvellePiece(SurfaceJeu *surface)
+void nouvellePiece(SurfaceJeu *surface, int pieces[NB_PIECES][5][5])
 {
-	surface->surf[0][surface->largeur/2] = 10;
+	int index = rand()%NB_PIECES;
+	int x, y;
+	int posX = surface->largeur/2, posY = 3;
+	for(x = 0; x < 5; x++)
+		for(y = 0; y < 5; y++)
+		{
+			if(pieces[index][y][x] != 0)
+				surface->surf[posY+y-3][posX+x-3] = pieces[index][y][x];
+		}
+		
 }
 
 void deplacerGauche(Piece *piece)

@@ -3,6 +3,7 @@
 #define WIDTH 800
 #define HEIGHT 600
 #define CADRE 10
+#define NB_PIECES 2
 
 void setPixel(SDL_Surface *screen, int x, int y, Uint32 coul)
 {
