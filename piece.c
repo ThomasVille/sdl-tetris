@@ -1,12 +1,11 @@
-/** Catalogues des pièces du Tetris **/
-
-struct SurfaceJeu
+struct GameMatrix
 {
-	int hauteur, largeur;
+	int height, width;
 	int coteBloc;
 	int **surf;
+	Uint32 colors[7];
 };
-typedef struct SurfaceJeu SurfaceJeu;
+typedef struct GameMatrix GameMatrix;
 
 struct Piece
 {

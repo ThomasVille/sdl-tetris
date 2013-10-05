@@ -6,16 +6,16 @@
 #include "affichage_sdl.c"
 
 
-void nouvellePiece(SurfaceJeu*, int[NB_PIECES][5][5]);
-void deplacerGauche(Piece *piece);
-void deplacerBas(Piece *piece);
-void deplacerDroite(Piece *piece);
+void addPiece(GameMatrix*, int[NB_PIECES][5][5]);
+void moveLeft(Piece *piece);
+void moveDown(Piece *piece);
+void moveRight(Piece *piece);
 int testCollisions(Piece piece);
-void dessinerPiece(SDL_Surface *screen, Piece piece);
+void drawPiece(SDL_Surface *screen, Piece piece);
 int **createTable(int nbLin, int nbCol);
 
 /* DEBUG */
-void addRandElem(SurfaceJeu *);
+void addRandElem(GameMatrix *);
 
 int main(int argc, char** argv)
 {
@@ -33,17 +33,17 @@ int main(int argc, char** argv)
 	/** Variables Jeu **/
 
 	/** Crée la surface de jeu **/
-	SurfaceJeu *surface = malloc(sizeof(SurfaceJeu));
-	surface->hauteur = 20;
-	surface->largeur = 10;
-	surface->surf = createTable(surface->hauteur, surface->largeur);
+	GameMatrix *surface = malloc(sizeof(GameMatrix));
+	surface->height = 22;
+	surface->width = 10;
+	surface->surf = createTable(surface->height, surface->width);
 	
 	// Calcul de la largeur d'un bloc en fonction des dimensions de la fenêtre
-	surface->coteBloc = (HEIGHT-CADRE*2)/surface->hauteur;
+	surface->coteBloc = (HEIGHT-CADRE*2)/surface->height;
 	
 	// Initialisation de la surface à 0
-	for(i = 0; i < surface->hauteur; i++)
-		for(j = 0; j < surface->largeur; j++)
+	for(i = 0; i < surface->height; i++)
+		for(j = 0; j < surface->width; j++)
 			surface->surf[i][j] = 0;	
 	
 	/*************************** Initialisation SDL	***************************/ 
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 	/*************************** Initialisation SDL	***************************/ 
 
 	
-	nouvellePiece(surface, pieces);
+	addPiece(surface, pieces);
 	/** S'arrêtera quand le tableau est plein **/
 	do
 	{
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 		//dessinerGrille(screen, coteBloc);
 		//deplacerBas(piece_qui_descend);
 		//dessinerPiece(screen, *piece_qui_descend);
-		dessinerSurfaceJeu(screen, surface);
+		drawGameMatrix(screen, surface);
 		
 		SDL_Flip(screen);
 		
@@ -120,11 +120,11 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-void nouvellePiece(SurfaceJeu *surface, int pieces[NB_PIECES][5][5])
+void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 {
 	int index = rand()%NB_PIECES;
 	int x, y;
-	int posX = surface->largeur/2, posY = 3;
+	int posX = surface->width/2, posY = 3;
 	for(x = 0; x < 5; x++)
 		for(y = 0; y < 5; y++)
 		{
@@ -134,7 +134,7 @@ void nouvellePiece(SurfaceJeu *surface, int pieces[NB_PIECES][5][5])
 		
 }
 
-void deplacerGauche(Piece *piece)
+void moveLeft(Piece *piece)
 {
 	piece->x--;
 	if(testCollisions(*piece))
@@ -142,13 +142,13 @@ void deplacerGauche(Piece *piece)
 
 }
 
-void deplacerBas(Piece *piece)
+void moveDown(Piece *piece)
 {
 	piece->y++;
 	if(testCollisions(*piece))
 		piece->y--;
 }
-void deplacerDroite(Piece *piece)
+void moveRight(Piece *piece)
 {
 	piece->x++;
 	if(testCollisions(*piece))
@@ -163,9 +163,9 @@ int testCollisions(Piece piece)
 		
 }
 
-void dessinerPiece(SDL_Surface *screen, Piece piece)
+void drawPiece(SDL_Surface *screen, Piece piece)
 {
-	dessinerCarre(screen, piece.cote, piece.x, piece.y);
+	drawSquare(screen, piece.cote, piece.x, piece.y);
 }
 
 // Crée un tableau à 2 dimensions
@@ -179,9 +179,9 @@ int **createTable(int nbLin, int nbCol){
 	return tableau;
 }
 /* DEBUG */
-void addRandElem(SurfaceJeu *surface)
+void addRandElem(GameMatrix *surface)
 {
-	int x = rand()%surface->largeur;
-	int y = rand()%surface->hauteur;
+	int x = rand()%surface->width;
+	int y = rand()%surface->height;
 	surface->surf[y][x] = 10;
 }
