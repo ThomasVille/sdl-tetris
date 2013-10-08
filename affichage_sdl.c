@@ -44,10 +44,11 @@ void drawGrid(SDL_Surface *screen, int coteBloc)
 		}
 	}
 }
-// Dessine la surface de jeu
+
 void drawGameMatrix(SDL_Surface *screen, GameMatrix *surface)
 {
-	int x, y, val, colorIndex;
+	int x, y, val, colorIndex, i;
+	// Dessine la surface de jeu
 	for(y = 0; y < HAUTEUR; y++)
 	{
 		for(x = 0; x < LARGEUR; x++)
@@ -59,5 +60,10 @@ void drawGameMatrix(SDL_Surface *screen, GameMatrix *surface)
 				drawSquare(screen, surface->coteBloc,surface->colors[colorIndex-1], x, y);
 			}
 		}
+	}
+	// Dessine la pièce mobile
+	for(i = 0; i < 4; i++)
+	{
+		drawSquare(screen, surface->coteBloc, surface->colors[0], surface->pieceMobile[i].x, surface->pieceMobile[i].y);
 	}
 }

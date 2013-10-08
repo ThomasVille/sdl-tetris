@@ -5,13 +5,8 @@
 #include <time.h>
 #include "piece.c"
 #include "affichage_sdl.c"
+#include "gameLogic.h"
 
-
-void addPiece(GameMatrix*, int[NB_PIECES][5][5]);
-int moveLeft(GameMatrix*);
-int moveRight(GameMatrix*);
-int moveDown(GameMatrix*);
-int testCollisions(Piece piece);
 int **createTable(int nbLin, int nbCol);
 
 /* DEBUG */
@@ -30,7 +25,7 @@ int main(int argc, char** argv)
 								   {{0,0,0,0,0},{0,0,50,0,0},{0,0,51,0,0},{0,50,50,0,0},{0,0,0,0,0}},
 								   {{0,0,0,0,0},{0,0,60,0,0},{0,60,61,0,0},{0,60,0,0,0},{0,0,0,0,0}},
 								   {{0,0,0,0,0},{0,0,70,0,0},{0,0,71,70,0},{0,0,0,70,0},{0,0,0,0,0}}};
-
+		
 	/** Variables SDL **/
 	SDL_Surface *screen = NULL;
 	SDL_Event event;
@@ -77,6 +72,7 @@ int main(int argc, char** argv)
 	surface->colors[5] = SDL_MapRGB(screen->format, 0,255,255); // Cyan
 	surface->colors[6] = SDL_MapRGB(screen->format, 0,255,0); // Vert
 	
+	
 	/* DEBUG */
 	surface->surf[21][5] = 1;
 	
@@ -101,6 +97,8 @@ int main(int argc, char** argv)
 							break;
 						case SDLK_ESCAPE:
 							continuer = 0;
+						default:
+							break;
 					}
 					break;
 							
@@ -132,127 +130,6 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
-{
-	int index = rand()%NB_PIECES;
-	int x, y;
-	int posX = surface->width/2, posY = 3;
-	for(x = 0; x < 5; x++)
-		for(y = 0; y < 5; y++)
-		{
-			if(pieces[index][y][x] != 0)
-				surface->surf[posY+y-3][posX+x-3] = pieces[index][y][x];
-		}
-		
-}
-
-int moveLeft(GameMatrix *surface)
-{
-	int x, y;
-	/* Vérifie que la pièce n'est pas au bord */
-	for(y = 0; y < surface->height; y++)
-		if(surface->surf[y][0] >= 10)
-			return 1;
-	
-	
-	
-	/* Parcours chaque lignes du tableau de droite à gauche et vérifie que
-	 * l'on a pas une case mobile suivie d'une case fixe */
-	 for(y = 0; y < surface->height; y++)
-		for(x = surface->width-2; x >= 0; x--)
-			if(surface->surf[y][x+1] >= 10 && surface->surf[y][x] < 10 && surface->surf[y][x] != 0)
-			{
-				printf("Bloqué par un bloc fixe\n");
-				return 1;
-			}
-			
-			
-	/* Parcours le tableau depuis la gauche pour déplacer les cases une par une */
-	for(y = 0; y < surface->height; y++)
-		for(x = 1; x < surface->width; x++)
-			if(surface->surf[y][x-1] == 0 && surface->surf[y][x] >= 10) // Si on est sur une case mobile à droite d'une case vide
-			{
-				// Copie l'ancienne case dans la nouvelle
-				surface->surf[y][x-1] = surface->surf[y][x];
-				// Supprime l'ancienne
-				surface->surf[y][x] = 0;
-			}
-	return 0;
-}
-int moveRight(GameMatrix *surface)
-{
-	int x, y;
-	/* Vérifie que la pièce n'est pas au bord */
-	for(y = 0; y < surface->height; y++)
-		if(surface->surf[y][surface->width-1] >= 10)
-			return 1;
-	
-	
-	/* Parcours chaque lignes du tableau de gauche à droite et vérifie que
-	 * l'on a pas une case mobile suivie d'une case fixe */
-	 for(y = 0; y < surface->height; y++)
-		for(x = 1; x < surface->width; x++)
-			if(surface->surf[y][x-1] >= 10 && surface->surf[y][x] < 10 && surface->surf[y][x] != 0)
-			{
-				printf("Bloqué par un bloc fixe\n");
-				return 1;
-			}
-	
-	
-	/* Parcours le tableau depuis la droite pour déplacer les cases une par une */
-	for(y = 0; y < surface->height; y++)
-		for(x = surface->width-2; x >= 0; x--) // -1 pour être à la fin du tableau et -1 pour ne pas parcourir la dernière case
-			if(surface->surf[y][x+1] == 0 && surface->surf[y][x] >= 10) // Si on est sur une case mobile à gauche d'une case vide
-			{
-				// Copie l'ancienne case dans la nouvelle
-				surface->surf[y][x+1] = surface->surf[y][x];
-				// Supprime l'ancienne
-				surface->surf[y][x] = 0;
-			}
-	return 0;
-}
-
-int moveDown(GameMatrix *surface)
-{
-	int x, y;
-	/* Vérifie qu'on peut descendre */
-	
-	// Vérifie qu'on est pas arrivé au sol
-	for(x = 0; x < surface->width; x++)
-	{
-		printf(" %d ", surface->surf[surface->height-1][x]);
-		if(surface->surf[surface->height-1][x] >= 10)
-		{
-			printf("Fin de la ligne\n");
-			return 2;
-		}
-	}
-	printf("\n");
-	
-	
-	/* Parcours chaque colonne du tableau de haut en bas et vérifie que
-	 * l'on a pas une case mobile suivie d'une case fixe */
-	 for(x = 0; x < surface->width; x++)
-		for(y = 1; y < surface->height; y++)
-			if(surface->surf[y-1][x] >= 10 && surface->surf[y][x] < 10 && surface->surf[y][x] != 0)
-			{
-				printf("Bloqué par un bloc fixe\n");
-				return 1;
-			}
-	
-	
-	/* Parcours le tableau depuis le bas pour déplacer les cases une par une */
-	for(x = 0; x < surface->width; x++)
-		for(y = surface->height-2; y >= 0; y--) // -1 pour être à la fin du tableau et -1 pour ne pas parcourir la dernière case
-			if(surface->surf[y+1][x] == 0 && surface->surf[y][x] >= 10) // Si on est sur une case mobile au dessus d'une case vide
-			{
-				// Copie l'ancienne case dans la nouvelle
-				surface->surf[y+1][x] = surface->surf[y][x];
-				// Supprime l'ancienne
-				surface->surf[y][x] = 0;
-			}
-	return 0;
-}
 
 // Crée un tableau à 2 dimensions
 int **createTable(int nbLin, int nbCol){
