@@ -9,13 +9,11 @@
 
 int **createTable(int nbLin, int nbCol);
 
-/* DEBUG */
-void addRandElem(GameMatrix *);
-
 int main(int argc, char** argv)
 {
-	int continuer = 1;
+	int continuer = 1, vitesse = 2;
 	int i = 0,j = 0;
+	clock_t depart, fin;
 
 	// Tableau qui représente toutes les pièces possibles
 	int pieces[NB_PIECES][5][5] = {{{0,0,10,0,0},{0,0,10,0,0},{0,0,11,0,0},{0,0,10,0,0},{0,0,0,0,0}},
@@ -72,17 +70,17 @@ int main(int argc, char** argv)
 	surface->colors[5] = SDL_MapRGB(screen->format, 0,255,255); // Cyan
 	surface->colors[6] = SDL_MapRGB(screen->format, 0,255,0); // Vert
 	
-	
-	/* DEBUG */
-	surface->surf[21][5] = 1;
-	
+		
 	addPiece(surface, pieces);
+	
+	depart = clock();
 	/** TODO S'arrêtera quand le tableau sera plein **/
 	do
 	{
 		/* Gère les évenements */
 		while(SDL_PollEvent(&event))
 		{
+			
 			switch(event.type)
 			{
 				case SDL_KEYDOWN: // Gère l'appui sur une touche
@@ -115,14 +113,20 @@ int main(int argc, char** argv)
 			}
 		}*/
 		drawGrid(screen, surface->coteBloc);
-		moveDown(surface);
-		
 		drawGameMatrix(screen, surface);
-		
 		SDL_Flip(screen);
 		
-		usleep(500000);
-
+		if(clock() > depart + (CLOCKS_PER_SEC)/vitesse)
+		{
+			depart = clock();
+			if(moveDown(surface) == 1)
+			{
+				fixPiece(surface);
+				addPiece(surface, pieces);
+				vitesse++;
+			}
+		}
+		
 	}while (continuer);
 	
 	SDL_FreeSurface(screen);
@@ -140,11 +144,4 @@ int **createTable(int nbLin, int nbCol){
 		tableau[i] = &tableau2[i*nbCol];
 	}
 	return tableau;
-}
-/* DEBUG */
-void addRandElem(GameMatrix *surface)
-{
-	int x = rand()%surface->width;
-	int y = rand()%surface->height;
-	surface->surf[y][x] = 10;
 }
