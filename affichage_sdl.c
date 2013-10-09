@@ -56,7 +56,7 @@ void drawGameMatrix(SDL_Surface *screen, GameMatrix *surface)
 			val = surface->surf[y][x];
 			if(val != 0)
 			{
-				colorIndex = val/10;
+				colorIndex = val;
 				drawSquare(screen, surface->coteBloc,surface->colors[colorIndex-1], x, y);
 			}
 		}
@@ -64,6 +64,6 @@ void drawGameMatrix(SDL_Surface *screen, GameMatrix *surface)
 	// Dessine la pièce mobile
 	for(i = 0; i < 4; i++)
 	{
-		drawSquare(screen, surface->coteBloc, surface->colors[0], surface->pieceMobile[i].x, surface->pieceMobile[i].y);
+		drawSquare(screen, surface->coteBloc, surface->colors[surface->pieceMobile[0].color], surface->pieceMobile[i].x, surface->pieceMobile[i].y);
 	}
 }
