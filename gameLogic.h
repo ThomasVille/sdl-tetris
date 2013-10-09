@@ -9,7 +9,7 @@ void fixPiece(GameMatrix *surface);
 int moveLeft(GameMatrix *surface);
 int moveRight(GameMatrix *surface);
 int moveDown(GameMatrix *surface);
-
+int rotateLeft(GameMatrix *surface);
 
 
 

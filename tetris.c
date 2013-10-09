@@ -91,7 +91,9 @@ int main(int argc, char** argv)
 							break;
 						case SDLK_RIGHT:
 							moveRight(surface);
-							
+							break;
+						case SDLK_UP:
+							rotateLeft(surface);
 							break;
 						case SDLK_ESCAPE:
 							continuer = 0;

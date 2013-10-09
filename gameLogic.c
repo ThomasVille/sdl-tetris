@@ -98,3 +98,28 @@ int moveDown(GameMatrix *surface)
 	return 0;
 }
 
+int rotateLeft(GameMatrix *surface)
+{
+	int i;
+	// Coordonnées d'un carré et du centre du carré
+	int x, y, xC, yC;
+	
+	xC = surface->pieceMobile[0].x;
+	yC = surface->pieceMobile[0].y;
+	
+	printf("%d %d\n", xC, yC);
+	
+	// Cherche pas à comprendre, sinon démontre ces deux formules :P
+	for(i = 1; i < 4; i++)
+	{
+		printf("%d %d\n", surface->pieceMobile[i].x, surface->pieceMobile[i].y);
+		surface->pieceMobile[i].x = xC + surface->pieceMobile[i].y - yC;
+		surface->pieceMobile[i].y = surface->pieceMobile[i].x - xC + yC;
+	}
+	return 0;
+}
+
+
+
+
+
