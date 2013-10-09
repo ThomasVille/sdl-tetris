@@ -1,35 +1,58 @@
 void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 {
 	int index = rand()%NB_PIECES;
-	int x, y, i = 0;
+	int x, y, i = 1;
 	int posX = surface->width/2, posY = 3;
+	
+	// Récupère les coordonnées du centre la pièce
+	surface->pieceMobile[0].x = posX-1;
+	surface->pieceMobile[0].y = posY-1;
+	surface->pieceMobile[0].color = index;
+	
+	// Parcours le tableau de la pièce tirée au hasard
 	for(x = 0; x < 5; x++)
 		for(y = 0; y < 5; y++)
 		{
-			if(pieces[index][y][x] != 0)
+			// Si la case représente un carré et que ce carré n'est pas le centre de la pièce
+			if(pieces[index][y][x] != 0 && pieces[index][y][x]%10 == 0)
 			{
+				// Calcul les coordonnées du carré dans la surface de jeu
 				surface->pieceMobile[i].x = posX+x-3;
 				surface->pieceMobile[i].y = posY+y-3;
+				surface->pieceMobile[i].color = index;
 				
-				printf("%d %d\n", surface->pieceMobile[i].x, surface->pieceMobile[i].y);
 				i++;
 			}
 		}
 		
 }
 
-int moveLeft(GameMatrix *surface)
+void fixPiece(GameMatrix *surface)
 {
-	int i = 0, x, y;
+	int i, x, y;
 	for(i = 0; i < 4; i++)
 	{
 		x = surface->pieceMobile[i].x;
 		y = surface->pieceMobile[i].y;
+		
+		surface->surf[y][x] = surface->pieceMobile[i].color+1;
+	}
+}
+int moveLeft(GameMatrix *surface)
+{
+	int i = 0, x, y;
+	// Parcours la liste des carrés
+	for(i = 0; i < 4; i++)
+	{
+		x = surface->pieceMobile[i].x;
+		y = surface->pieceMobile[i].y;
+		// Collision avec le bord gauche ou une pièce fixe à gauche
 		if( (x == 0) )
 			return 1;
 		if(surface->surf[y][x-1] > 0 && surface->surf[y][x-1] < 10)
 			return 1;
 	}
+	// Déplacement
 	for(i = 0; i < 4; i++)
 		surface->pieceMobile[i].x--;
 	return 0;
@@ -38,6 +61,7 @@ int moveLeft(GameMatrix *surface)
 int moveRight(GameMatrix *surface)
 {
 	int i = 0, x, y;
+	// Collisions
 	for(i = 0; i < 4; i++)
 	{
 		x = surface->pieceMobile[i].x;
@@ -47,6 +71,7 @@ int moveRight(GameMatrix *surface)
 		if(surface->surf[y][x+1] > 0 && surface->surf[y][x+1] < 10)
 			return 1;
 	}
+	// Déplacement
 	for(i = 0; i < 4; i++)
 		surface->pieceMobile[i].x++;
 	
@@ -61,7 +86,7 @@ int moveDown(GameMatrix *surface)
 	{
 		x = surface->pieceMobile[i].x;
 		y = surface->pieceMobile[i].y;
-		printf("Salope ! x = %d y = %d\n", x, y);
+		
 		if( (y == surface->height-1) )
 			return 1;
 		if(surface->surf[y+1][x] > 0 && surface->surf[y+1][x] < 10)
