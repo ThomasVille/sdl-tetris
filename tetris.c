@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <SDL/SDL.h>
 #include <time.h>
+#include <math.h>
 #include "piece.c"
 #include "affichage_sdl.c"
 #include "gameLogic.h"
@@ -11,7 +12,7 @@ int **createTable(int nbLin, int nbCol);
 
 int main(int argc, char** argv)
 {
-	int continuer = 1, vitesse = 2;
+	int continuer = 1, vitesse = 5, cadre = 10, score = 0;
 	int i = 0,j = 0;
 	clock_t depart, fin;
 
@@ -93,15 +94,28 @@ int main(int argc, char** argv)
 							moveRight(surface);
 							break;
 						case SDLK_UP:
-							rotateLeft(surface);
+							rotate(surface);
 							break;
 						case SDLK_ESCAPE:
 							continuer = 0;
+						case SDLK_DOWN:
+							vitesse*=3;						
 						default:
 							break;
 					}
 					break;
+				case SDL_KEYUP:
+					switch(event.key.keysym.sym)
+					{
+						case SDLK_DOWN:
+							vitesse/=3;
+							break;
+						
+						default:
+							break;	
 							
+					}	
+					break;		
 				case SDL_QUIT:
 					continuer = 0;
 			}
@@ -114,8 +128,8 @@ int main(int argc, char** argv)
 				setPixel(screen, i,j,SDL_MapRGB(screen->format, 100,100,100));
 			}
 		}*/
-		drawGrid(screen, surface->coteBloc);
-		drawGameMatrix(screen, surface);
+		drawGrid(screen, surface->coteBloc, surface->width, surface->height, cadre);
+		drawGameMatrix(screen, surface, cadre);
 		SDL_Flip(screen);
 		
 		if(clock() > depart + (CLOCKS_PER_SEC)/vitesse)
@@ -123,9 +137,19 @@ int main(int argc, char** argv)
 			depart = clock();
 			if(moveDown(surface) == 1)
 			{
+				
 				fixPiece(surface);
+				
 				addPiece(surface, pieces);
-				vitesse++;
+				
+				score += testerLignes (surface);
+				
+				for (i= 0; i<10; i++)
+				{
+					if (surface->surf[0][i] != 0)
+					continuer = 0;
+						
+				}
 			}
 		}
 		

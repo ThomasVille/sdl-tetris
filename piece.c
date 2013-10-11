@@ -7,7 +7,7 @@ typedef struct Carre Carre;
 
 struct GameMatrix
 {
-	int height, width;
+	int height, width; /// Largeur et hauteur de la surface de jeu en blocs
 	int coteBloc;
 	int **surf;
 	Carre pieceMobile[4];
