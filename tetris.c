@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 #include <time.h>
 #include <math.h>
 #include "piece.c"
@@ -12,7 +13,8 @@ int **createTable(int nbLin, int nbCol);
 
 int main(int argc, char** argv)
 {
-	int continuer = 1, vitesse = 5, cadre = 10, score = 0;
+	
+	int continuer = 1, vitesse = 5, cadre = 10, score = 1;
 	int i = 0,j = 0;
 	clock_t depart, fin;
 
@@ -26,8 +28,10 @@ int main(int argc, char** argv)
 								   {{0,0,0,0,0},{0,0,70,0,0},{0,0,71,70,0},{0,0,0,70,0},{0,0,0,0,0}}};
 		
 	/** Variables SDL **/
-	SDL_Surface *screen = NULL;
+	SDL_Surface *screen = NULL, *texteScore = NULL;
 	SDL_Event event;
+	
+	
 	
 	srand(time(NULL));
 	/*************************** Initialisation SDL	***************************/ 
@@ -47,6 +51,7 @@ int main(int argc, char** argv)
  
 	SDL_WM_SetCaption("Tetris Powaaaa !", NULL);
 	
+
 	/*************************** Initialisation SDL	***************************/ 
 
 	/** Crée la surface de jeu **/
@@ -75,9 +80,12 @@ int main(int argc, char** argv)
 	addPiece(surface, pieces);
 	
 	depart = clock();
-	/** TODO S'arrêtera quand le tableau sera plein **/
+		
+		
+	
 	do
 	{
+				
 		/* Gère les évenements */
 		while(SDL_PollEvent(&event))
 		{
@@ -99,7 +107,7 @@ int main(int argc, char** argv)
 						case SDLK_ESCAPE:
 							continuer = 0;
 						case SDLK_DOWN:
-							vitesse*=3;						
+							vitesse*=4;						
 						default:
 							break;
 					}
@@ -107,8 +115,8 @@ int main(int argc, char** argv)
 				case SDL_KEYUP:
 					switch(event.key.keysym.sym)
 					{
-						case SDLK_DOWN:
-							vitesse/=3;
+						case SDLK_DOWN: //pour descendre plus vite
+							vitesse/=4;
 							break;
 						
 						default:
@@ -126,36 +134,37 @@ int main(int argc, char** argv)
 		/*for(i=0;i<=((WIDTH*2)/3);i++){
 			for(j=0;j<=CADRE;j++){
 				setPixel(screen, i,j,SDL_MapRGB(screen->format, 100,100,100));
-			}
-		}*/
+			}*/
+		
 		drawGrid(screen, surface->coteBloc, surface->width, surface->height, cadre);
 		drawGameMatrix(screen, surface, cadre);
 		SDL_Flip(screen);
 		
 		if(clock() > depart + (CLOCKS_PER_SEC)/vitesse)
 		{
+			
 			depart = clock();
 			if(moveDown(surface) == 1)
 			{
 				
-				fixPiece(surface);
+				score += fixPiece(surface);
 				
-				addPiece(surface, pieces);
 				
-				score += testerLignes (surface);
 				
-				for (i= 0; i<10; i++)
-				{
-					if (surface->surf[0][i] != 0)
+					
+				if (surface->surf[2][4] !=0)
 					continuer = 0;
-						
-				}
+					
+				else	
+					addPiece(surface, pieces);
+				
 			}
 		}
 		
 	}while (continuer);
 	
 	SDL_FreeSurface(screen);
+	
 	
 	return EXIT_SUCCESS;
 }

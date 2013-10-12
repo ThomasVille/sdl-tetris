@@ -1,9 +1,13 @@
 void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 {
 	int index = rand()%NB_PIECES;
-	int x, y, i = 1;
-	int posX = surface->width/2, posY = 2;
+	int x, y, i = 1;	
+	int posX = surface->width/2, posY = 1;
 	
+	if (index == 0) // pour corriger le bug du baton
+	{
+		posY = 2;
+	}
 	
 	
 	
@@ -30,18 +34,26 @@ void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 		
 }
 
-void fixPiece(GameMatrix *surface)
+int fixPiece(GameMatrix *surface)
 {
-	int i, x, y, resLigne = 0;
+	int i, x, y, resLigne = 0, scoring = 0;
+	
+	if (surface->surf[2][4] != 0)
+		return 0;
+	
 	for(i = 0; i < 4; i++)
 	{
 		x = surface->pieceMobile[i].x;
 		y = surface->pieceMobile[i].y;
-		
+				
 		surface->surf[y][x] = surface->pieceMobile[i].color+1;
+		
+		
 	}
 	
-	
+	scoring += testerLignes (surface);
+		
+	return scoring;
 		
 		
 }
@@ -58,6 +70,8 @@ int moveLeft(GameMatrix *surface)
 			return 1;
 		if(surface->surf[y][x-1] > 0 && surface->surf[y][x-1] < 10)
 			return 1;
+		if (y <= 0) //évite un bug avec le baton rouge au début (seg fault)
+			return 1;	
 	}
 	// Déplacement
 	for(i = 0; i < 4; i++)
@@ -76,6 +90,8 @@ int moveRight(GameMatrix *surface)
 		if( (x == surface->width-1) )
 			return 1;
 		if(surface->surf[y][x+1] > 0 && surface->surf[y][x+1] < 10)
+			return 1;
+		if (y <= 0) //évite un bug avec le baton rouge au début (seg fault)
 			return 1;
 	}
 	// Déplacement
@@ -110,20 +126,50 @@ int rotate(GameMatrix *surface)
 {
 	int i;
 	// Coordonnées d'un carré et du centre du carré
-	int x, y, xC, yC;
+	int x, y, xC, yC, x1init, y1init, x2init, y2init, x3init, y3init;
 	
 	xC = surface->pieceMobile[0].x;
 	yC = surface->pieceMobile[0].y;
 	
-		
+	/**Variables initiales pour empecher de tourner sur un bord**/
+	x1init = surface->pieceMobile[1].x;
+	y1init = surface->pieceMobile[1].y;
 	
-	// Cherche pas à comprendre, sinon démontre ces deux formules :P
+	x2init = surface->pieceMobile[2].x;
+	y2init = surface->pieceMobile[2].y;
+	
+	x3init = surface->pieceMobile[3].x;
+	y3init = surface->pieceMobile[3].y;	
+	/**Variables initiales pour empecher de tourner sur un bord**/
+	
+			
+	
+	// Equation de la rotation 2D (sans oublier les variables tampon..)
 	for(i = 1; i < 4; i++)
 	{
+				
 		x = surface->pieceMobile[i].x;
 		y = surface->pieceMobile[i].y;
 		surface->pieceMobile[i].x = xC - y + yC;
 		surface->pieceMobile[i].y = yC + x - xC;
+		
+	
+		
+		if (surface->pieceMobile[i].x > 9 || surface->pieceMobile[i].y > 21 ||surface->pieceMobile[i].x < 0 ||surface->pieceMobile[i].y < 0)//si on sort du cadre aprés rotation, on revient à la position initiale
+			{
+				i = 4;
+				surface->pieceMobile[1].x = x1init;
+				surface->pieceMobile[1].y = y1init;
+				
+				surface->pieceMobile[2].x = x2init;
+				surface->pieceMobile[2].y = y2init;
+				
+				surface->pieceMobile[3].x = x3init;
+				surface->pieceMobile[3].y = y3init;
+			
+				 	
+			}	
+		
 		
 		
 	}
@@ -134,14 +180,15 @@ int testerLignes (GameMatrix *surface) // fonction qui test si les lignes sont p
 {
 	
 	int i, j, produitLigne = 1, x, y, nbLigne, scoring;
-	
-	for (j = 0; j < 21;j++);
+	j = 0;
+	do
 	{
 		produitLigne = 1;
 		
 		for (i = 0; i < 10; i++) 
 		{	
-			produitLigne *= surface->surf[21][i]; //on fait le produit de toutes les cases de la ligne (si = 0 au moins une case n'est pas pleine)
+			produitLigne *= surface->surf[j][i]; //on fait le produit de toutes les cases de la ligne (si = 0 au moins une case n'est pas pleine)
+			
 		}
 		
 		if (produitLigne !=0)
@@ -156,8 +203,11 @@ int testerLignes (GameMatrix *surface) // fonction qui test si les lignes sont p
 					
 			}	
 			
-		}	
-	}
+		}
+		
+		j++;
+			
+	}while (j < 22);
 	scoring = (pow(2,nbLigne-1))*100; //on renvoi le score calculé en fonction du nombre de lignes complètes
 	
 	return scoring;
