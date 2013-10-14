@@ -6,7 +6,7 @@ void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 	
 	if (index == 0) // pour corriger le bug du baton
 	{
-		posY = 2;
+		posY = 3;
 	}
 	
 	
@@ -36,7 +36,7 @@ void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
 
 int fixPiece(GameMatrix *surface)
 {
-	int i, x, y, resLigne = 0, scoring = 0;
+	int i, x, y, resLigne = 0, nbLignes = 0;
 	
 	if (surface->surf[2][4] != 0)
 		return 0;
@@ -51,9 +51,11 @@ int fixPiece(GameMatrix *surface)
 		
 	}
 	
-	scoring += testerLignes (surface);
-		
-	return scoring;
+	
+	nbLignes = testerLignes(surface);
+	//printf("nombre de lignes = %d\n", nbLignes);
+			
+	return nbLignes;
 		
 		
 }
@@ -155,7 +157,7 @@ int rotate(GameMatrix *surface)
 		
 	
 		
-		if (surface->pieceMobile[i].x > 9 || surface->pieceMobile[i].y > 21 ||surface->pieceMobile[i].x < 0 ||surface->pieceMobile[i].y < 0)//si on sort du cadre aprés rotation, on revient à la position initiale
+		if (surface->pieceMobile[i].x > 9 || surface->pieceMobile[i].y > 21 ||surface->pieceMobile[i].x < 0 ||surface->pieceMobile[i].y < 0 || surface->surf[surface->pieceMobile[i].y][surface->pieceMobile[i].x] != 0)//si on sort du cadre aprés rotation, on revient à la position initiale
 			{
 				i = 4;
 				surface->pieceMobile[1].x = x1init;
@@ -179,7 +181,7 @@ int rotate(GameMatrix *surface)
 int testerLignes (GameMatrix *surface) // fonction qui test si les lignes sont pleines
 {
 	
-	int i, j, produitLigne = 1, x, y, nbLigne, scoring;
+	int i, j, produitLigne = 1, x, y, nbLigne = 0;
 	j = 0;
 	do
 	{
@@ -208,9 +210,9 @@ int testerLignes (GameMatrix *surface) // fonction qui test si les lignes sont p
 		j++;
 			
 	}while (j < 22);
-	scoring = (pow(2,nbLigne-1))*100; //on renvoi le score calculé en fonction du nombre de lignes complètes
 	
-	return scoring;
+	
+	return nbLigne;
 }
 
 

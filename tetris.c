@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
+
 #include <time.h>
 #include <math.h>
 #include "piece.c"
@@ -10,11 +10,13 @@
 #include "gameLogic.h"
 
 int **createTable(int nbLin, int nbCol);
+int initSDL(SDL_Surface *screen);
+
 
 int main(int argc, char** argv)
 {
 	
-	int continuer = 1, vitesse = 5, cadre = 10, score = 1;
+	int continuer = 1, vitesse = 6, cadre = 10, score = 0, nbLignes = 0, nbLignesTotale = 0, scoring = 0;
 	int i = 0,j = 0;
 	clock_t depart, fin;
 
@@ -31,9 +33,6 @@ int main(int argc, char** argv)
 	SDL_Surface *screen = NULL, *texteScore = NULL;
 	SDL_Event event;
 	
-	
-	
-	srand(time(NULL));
 	/*************************** Initialisation SDL	***************************/ 
 	
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -53,6 +52,11 @@ int main(int argc, char** argv)
 	
 
 	/*************************** Initialisation SDL	***************************/ 
+/*	if(initSDL(screen) == EXIT_FAILURE)
+		return EXIT_FAILURE;
+	printf("%p\n", screen);*/
+	srand(time(NULL));
+
 
 	/** Crée la surface de jeu **/
 	GameMatrix *surface = malloc(sizeof(GameMatrix));
@@ -85,7 +89,8 @@ int main(int argc, char** argv)
 	
 	do
 	{
-				
+		nbLignes = 0;		
+		scoring = 0;
 		/* Gère les évenements */
 		while(SDL_PollEvent(&event))
 		{
@@ -107,7 +112,7 @@ int main(int argc, char** argv)
 						case SDLK_ESCAPE:
 							continuer = 0;
 						case SDLK_DOWN:
-							vitesse*=4;						
+							vitesse*=5;						
 						default:
 							break;
 					}
@@ -116,7 +121,7 @@ int main(int argc, char** argv)
 					switch(event.key.keysym.sym)
 					{
 						case SDLK_DOWN: //pour descendre plus vite
-							vitesse/=4;
+							vitesse/=5;
 							break;
 						
 						default:
@@ -147,10 +152,24 @@ int main(int argc, char** argv)
 			if(moveDown(surface) == 1)
 			{
 				
-				score += fixPiece(surface);
+				nbLignes = (fixPiece(surface));
+				printf("nombre de lignes = %d\n",nbLignes);
 				
 				
+				scoring = pow(2,nbLignes-1)*100;
+				if (scoring < 100)
+					score -= 50;
+					
+				score += scoring;	
 				
+				printf("score = %d\n", score);
+				
+				nbLignesTotale += nbLignes;
+				if (nbLignesTotale >= 10)
+				{
+					nbLignesTotale -= 10;
+					vitesse += 2; 
+				}
 					
 				if (surface->surf[2][4] !=0)
 					continuer = 0;
@@ -180,3 +199,11 @@ int **createTable(int nbLin, int nbCol){
 	}
 	return tableau;
 }
+
+/*
+int initSDL(SDL_Surface *screen)
+{
+		
+	return 0;
+}
+*/
