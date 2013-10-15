@@ -1,3 +1,8 @@
+/* Tetris SDL
+ * Le mythique jeu tetris revisité Tin-Tin-Tin !! en SDL
+ * Auteurs : VILLE Thomas, DEY Alexandre
+ * Etudiants à l'ESIEA Ouest
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -8,6 +13,7 @@
 #include "piece.c"
 #include "affichage_sdl.c"
 #include "gameLogic.h"
+#include "interface.h"
 
 int **createTable(int nbLin, int nbCol);
 /// Initialise la SDL
@@ -23,7 +29,7 @@ void computeTrueFps(int *realFps, int *realFpsCpt, int *lastSecondTicks);
 int main(int argc, char** argv)
 {
 	
-	int continuer = 1, vitesse = 6, cadre = 10, score = 0, nbLignes = 0, nbLignesTotale = 0, scoring = 0;
+	int continuer = 1, vitesse = 5, cadre = 10, score = 0, nbLignes = 0, nbLignesTotale = 0, scoring = 0;
 	int i = 0,j = 0;
 	clock_t depart, fin;
 	GameMatrix *surface = NULL;
@@ -33,7 +39,7 @@ int main(int argc, char** argv)
 	
 	/** Gérer les FPS **/
 	/// Nombre de FPS qu'on veut atteindre
-	int goalFps = 50;
+	int goalFps = 60;
 	/// Temps qui se passe entre deux frames (en millisecondes)
 	int ticksBetweenFrames = 1*(1000/goalFps);
 	/// Tick à attendre avant la prochaine frame (en millisecondes)
@@ -67,7 +73,7 @@ int main(int argc, char** argv)
 	// Crée une nouvelle surface de jeu
 	surface = newGameMatrix(screen);
 	
-		
+	
 	addPiece(surface, pieces);
 		
 		
@@ -122,10 +128,7 @@ int main(int argc, char** argv)
 		
 		/* Rempli l'écran de noir */
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 50,50,50));
-		/*for(i=0;i<=((WIDTH*2)/3);i++){
-			for(j=0;j<=CADRE;j++){
-				setPixel(screen, i,j,SDL_MapRGB(screen->format, 100,100,100));
-			}*/
+		
 		
 		drawGrid(screen, surface->coteBloc, surface->width, surface->height, cadre);
 		drawGameMatrix(screen, surface, cadre);
