@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
 
 #include <time.h>
 #include <math.h>
@@ -16,8 +17,6 @@
 #include "interface.h"
 
 int **createTable(int nbLin, int nbCol);
-/// Initialise la SDL
-void initSDL(SDL_Surface **ptr_screen);
 /// Crée un GameMatrix
 GameMatrix* newGameMatrix(SDL_Surface *screen);
 /// Temporise (attend le temps nécessaire pour atteindre les FPS souhaités)
@@ -36,6 +35,7 @@ int main(int argc, char** argv)
 	
 	/// Titre de la fenêtre
 	char caption[64];
+	char texteScore[10];
 	
 	/** Gérer les FPS **/
 	/// Nombre de FPS qu'on veut atteindre
@@ -50,8 +50,13 @@ int main(int argc, char** argv)
 	int moveDownCpt = 0;
 
 	/** Variables SDL **/
-	SDL_Surface *screen = NULL, *texteScore = NULL;
+	SDL_Surface *screen = NULL, *surfaceScore = NULL;
 	SDL_Event event;
+	TTF_Font *police = NULL;
+	SDL_Color couleurBlanche = {255, 255, 255};
+	SDL_Rect positionScore;
+	positionScore.x = 600;
+	positionScore.y = 200;
 	
 	// Tableau qui représente toutes les pièces possibles
 	int pieces[NB_PIECES][5][5] = {{{0,0,10,0,0},{0,0,10,0,0},{0,0,11,0,0},{0,0,10,0,0},{0,0,0,0,0}},
@@ -69,7 +74,7 @@ int main(int argc, char** argv)
 
 
 	// Envoie l'adresse du pointeur de sorte à le modifier
-	initSDL(&screen);
+	initSDL(&screen, &police);
 	// Crée une nouvelle surface de jeu
 	surface = newGameMatrix(screen);
 	
@@ -129,10 +134,14 @@ int main(int argc, char** argv)
 		/* Rempli l'écran de noir */
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 50,50,50));
 		
+		// Met à jour l'affichage du score
+		sprintf(texteScore, "Score : %d", score);
+		surfaceScore = TTF_RenderText_Blended(police, texteScore, couleurBlanche);
+		SDL_BlitSurface(surfaceScore, NULL, screen, &positionScore);
 		
 		drawGrid(screen, surface->coteBloc, surface->width, surface->height, cadre);
 		drawGameMatrix(screen, surface, cadre);
-		SDL_Flip(screen);
+		
 		
 		// Régule les FPS
 		tempoFps(&nextTick, ticksBetweenFrames);
@@ -148,7 +157,6 @@ int main(int argc, char** argv)
 			moveDownCpt = 0;
 			if(moveDown(surface) == 1)
 			{
-				
 				nbLignes = (fixPiece(surface));
 				printf("nombre de lignes = %d\n",nbLignes);
 				
@@ -157,7 +165,7 @@ int main(int argc, char** argv)
 				if (scoring < 100)
 					score -= 50;
 					
-				score += scoring;	
+				score += scoring;
 				
 				printf("score = %d\n", score);
 				
@@ -176,7 +184,12 @@ int main(int argc, char** argv)
 				
 			}
 		}
+		
+		SDL_Flip(screen);
 	}while (continuer);
+	
+	TTF_CloseFont(police); /* Doit être avant TTF_Quit() */
+	TTF_Quit();
 	
 	SDL_FreeSurface(screen);
 	
@@ -196,34 +209,6 @@ int **createTable(int nbLin, int nbCol){
 	return tableau;
 }
 
-/* Initialise la SDL
- * ptr_screen : Pointeur sur le pointeur de la SDL_Surface
- * On récupère un pointeur sur un pointeur pour modifier le pointeur
- * original
-*/
-void initSDL(SDL_Surface **ptr_screen)
-{
-	/*************************** Initialisation SDL	***************************/ 
-	atexit(SDL_Quit);
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "Erreur à l'initialisation de la SDL : %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
- 
-	// Modifie la valeur du pointeur 'screen'
-	*ptr_screen = SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_SWSURFACE || SDL_DOUBLEBUF);
-	
-	if (*ptr_screen == NULL) {
-		fprintf(stderr, "Impossible d'activer le mode graphique : %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
-	
-	printf("%p\n", *ptr_screen);
-	SDL_WM_SetCaption("Tetris Powaaaa !", NULL);
-	
-
-	/*************************** Initialisation SDL	***************************/ 
-}
 
 GameMatrix* newGameMatrix(SDL_Surface *screen)
 {

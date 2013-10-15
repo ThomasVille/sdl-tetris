@@ -88,3 +88,39 @@ void drawGameMatrix(SDL_Surface *screen, GameMatrix *surface, int cadre)
 		drawSquare(screen, surface->coteBloc, surface->colors[surface->pieceMobile[0].color], surface->pieceMobile[i].x, surface->pieceMobile[i].y, cadre);
 	}
 }
+
+/* Initialise la SDL
+ * ptr_screen : Pointeur sur le pointeur de la SDL_Surface
+ * ptr_police : Pointeur sur la police de caractère utilisée
+ * On récupère un pointeur sur un pointeur pour modifier le pointeur
+ * original
+*/
+void initSDL(SDL_Surface **ptr_screen, TTF_Font **ptr_police)
+{
+	/*************************** Initialisation SDL	***************************/ 
+	atexit(SDL_Quit);
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		fprintf(stderr, "Erreur à l'initialisation de la SDL : %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+ 
+	// Modifie la valeur du pointeur 'screen'
+	*ptr_screen = SDL_SetVideoMode(WIDTH, HEIGHT, 32, SDL_SWSURFACE || SDL_DOUBLEBUF);
+	
+	if (*ptr_screen == NULL) {
+		fprintf(stderr, "Impossible d'activer le mode graphique : %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+	
+	if(TTF_Init() == -1)
+	{
+		fprintf(stderr, "Erreur d'initialisation de TTF_Init : %s\n", TTF_GetError());
+		exit(EXIT_FAILURE);
+	}
+	
+	*ptr_police = TTF_OpenFont("Tetris.ttf", 30);
+	SDL_WM_SetCaption("Tetris Powaaaa !", NULL);
+	
+
+	/*************************** Initialisation SDL	***************************/ 
+}
