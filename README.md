@@ -3,4 +3,4 @@ sdl-tetris
 
 Compilation :
 
-gcc tetris.c -lm -lSDLmain -lSDL -o tetris
+gcc tetris.c -lm -lSDLmain -lSDL -lSDL_ttf -o tetris

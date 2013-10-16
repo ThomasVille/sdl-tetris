@@ -35,11 +35,10 @@ int main(int argc, char** argv)
 	
 	/// Titre de la fenêtre
 	char caption[64];
-	char texteScore[10];
 	
 	/** Gérer les FPS **/
 	/// Nombre de FPS qu'on veut atteindre
-	int goalFps = 60;
+	int goalFps = 1000;
 	/// Temps qui se passe entre deux frames (en millisecondes)
 	int ticksBetweenFrames = 1*(1000/goalFps);
 	/// Tick à attendre avant la prochaine frame (en millisecondes)
@@ -50,13 +49,10 @@ int main(int argc, char** argv)
 	int moveDownCpt = 0;
 
 	/** Variables SDL **/
-	SDL_Surface *screen = NULL, *surfaceScore = NULL;
+	SDL_Surface *screen = NULL;
 	SDL_Event event;
 	TTF_Font *police = NULL;
-	SDL_Color couleurBlanche = {255, 255, 255};
-	SDL_Rect positionScore;
-	positionScore.x = 600;
-	positionScore.y = 200;
+
 	
 	// Tableau qui représente toutes les pièces possibles
 	int pieces[NB_PIECES][5][5] = {{{0,0,10,0,0},{0,0,10,0,0},{0,0,11,0,0},{0,0,10,0,0},{0,0,0,0,0}},
@@ -134,10 +130,7 @@ int main(int argc, char** argv)
 		/* Rempli l'écran de noir */
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 50,50,50));
 		
-		// Met à jour l'affichage du score
-		sprintf(texteScore, "Score : %d", score);
-		surfaceScore = TTF_RenderText_Blended(police, texteScore, couleurBlanche);
-		SDL_BlitSurface(surfaceScore, NULL, screen, &positionScore);
+		inGameInterface(screen, police, score);
 		
 		drawGrid(screen, surface->coteBloc, surface->width, surface->height, cadre);
 		drawGameMatrix(screen, surface, cadre);
