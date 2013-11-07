@@ -12,13 +12,14 @@
 #include <time.h>
 #include <math.h>
 #include "piece.c"
-#include "affichage_sdl.c"
-#include "gameLogic.h"
+#include "affichage_sdl.h"
 #include "interface.h"
+#include "gameLogic.h"
+#include "highscore.h"
 
 int **createTable(int nbLin, int nbCol);
 /// Crée un GameMatrix
-GameMatrix* newGameMatrix(SDL_Surface *screen);
+GameMatrix* newGameMatrix(SDL_Surface *screen, int matrixHeight, int matrixWidth);
 /// Temporise (attend le temps nécessaire pour atteindre les FPS souhaités)
 void tempoFps(int *nextTick, int ticksBetweenFrames);
 /// Calcul les vrais FPS
@@ -28,17 +29,19 @@ void computeTrueFps(int *realFps, int *realFpsCpt, int *lastSecondTicks);
 int main(int argc, char** argv)
 {
 	
-	int continuer = 1, vitesse = 5, cadre = 10, score = 0, nbLignes = 0, nbLignesTotale = 0, scoring = 0;
+	int continuer = 1, vitesse = 4 , cadre = 10, score = 0, nbLignes = 0, nbLignesTotale = 0, scoring = 0, hasard, indexProchainePiece = 0;
+	char *name;
+	
 	int i = 0,j = 0;
 	clock_t depart, fin;
-	GameMatrix *surface = NULL;
+	GameMatrix *surface = NULL, *pieceSuivante = NULL;
 	
 	/// Titre de la fenêtre
 	char caption[64];
 	
 	/** Gérer les FPS **/
 	/// Nombre de FPS qu'on veut atteindre
-	int goalFps = 1000;
+	int goalFps = 30;
 	/// Temps qui se passe entre deux frames (en millisecondes)
 	int ticksBetweenFrames = 1*(1000/goalFps);
 	/// Tick à attendre avant la prochaine frame (en millisecondes)
@@ -67,19 +70,44 @@ int main(int argc, char** argv)
 	
 
 	srand(time(NULL));
+	
+	
+	
+	
 
 
 	// Envoie l'adresse du pointeur de sorte à le modifier
 	initSDL(&screen, &police);
+	
+
+	SDL_EnableKeyRepeat(100, 50);
+	mainMenu(screen, police);
+	
+	// Régule les FPS
+	tempoFps(&nextTick, ticksBetweenFrames);
+	// Calcul les vrais FPS
+	computeTrueFps(&realFps, &realFpsCpt, &lastSecondTicks);	
+	
 	// Crée une nouvelle surface de jeu
-	surface = newGameMatrix(screen);
+	surface = newGameMatrix(screen, 22,10);
+	//Crée la zone d'affichage de la prochaine piece
+	pieceSuivante = newGameMatrix(screen, 22, 10);
+	// Régule les FPS
+	tempoFps(&nextTick, ticksBetweenFrames);
+	// Calcul les vrais FPS
+	computeTrueFps(&realFps, &realFpsCpt, &lastSecondTicks);	
 	
+	// Ajoute une nouvelle pièce
+	indexProchainePiece = rand()%NB_PIECES;
+	addPiece(surface, pieces, indexProchainePiece);
+	// Génère la nouvelle pièce et met à jour l'affichage de pièce suivante
+	indexProchainePiece = rand()%NB_PIECES;
+	afficherProchainePiece(pieceSuivante, indexProchainePiece, pieces, police, screen);
 	
-	addPiece(surface, pieces);
-		
-		
 	do
 	{
+		SDL_Flip(screen);
+		
 		moveDownCpt++;
 		realFpsCpt++;
 		nbLignes = 0;		
@@ -105,6 +133,7 @@ int main(int argc, char** argv)
 						case SDLK_ESCAPE:
 							continuer = 0;
 						case SDLK_DOWN:
+							SDL_EnableKeyRepeat(0, 0);
 							vitesse*=5;						
 						default:
 							break;
@@ -115,6 +144,7 @@ int main(int argc, char** argv)
 					{
 						case SDLK_DOWN: //pour descendre plus vite
 							vitesse/=5;
+							SDL_EnableKeyRepeat(100, 50);
 							break;
 						
 						default:
@@ -130,11 +160,13 @@ int main(int argc, char** argv)
 		/* Rempli l'écran de noir */
 		SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 50,50,50));
 		
+	
 		inGameInterface(screen, police, score);
-		
+				
 		drawGrid(screen, surface->coteBloc, surface->width, surface->height, cadre);
 		drawGameMatrix(screen, surface, cadre);
-		
+		// Affiche la prochaine pièce
+		drawGameMatrix(screen, pieceSuivante, 250); 
 		
 		// Régule les FPS
 		tempoFps(&nextTick, ticksBetweenFrames);
@@ -148,10 +180,13 @@ int main(int argc, char** argv)
 		if(moveDownCpt >= realFps/vitesse)
 		{
 			moveDownCpt = 0;
+			// Si la pièce ne peut plus bouger
 			if(moveDown(surface) == 1)
 			{
+				
+				// Compte les lignes pleines lorsque la pièce atteint le bas du tableau
 				nbLignes = (fixPiece(surface));
-				printf("nombre de lignes = %d\n",nbLignes);
+				printf("nombre de lignes = %d\n",nbLignesTotale);
 				
 				
 				scoring = pow(2,nbLignes-1)*100;
@@ -163,22 +198,36 @@ int main(int argc, char** argv)
 				printf("score = %d\n", score);
 				
 				nbLignesTotale += nbLignes;
+				// Augemente la vitesse toutes les 10 lignes supprimées
 				if (nbLignesTotale >= 10)
 				{
 					nbLignesTotale -= 10;
 					vitesse += 2; 
 				}
-					
+				// Haut du tableau atteint, fin du jeu
 				if (surface->surf[2][4] !=0)
-					continuer = 0;
+				{	
+					name = SaisieNom(screen, police);
+					printf("nom final = %s",name);
 					
-				else	
-					addPiece(surface, pieces);
-				
+					EnregistrerScore(score,name);
+					
+					continuer = 0;
+				}	
+				// On continue normalement
+				else
+				{
+					addPiece(surface, pieces, indexProchainePiece);
+					// Génère la nouvelle pièce
+					indexProchainePiece = rand()%NB_PIECES;
+					// Met à jour l'affichage de la prochaine pièce
+					afficherProchainePiece(pieceSuivante, indexProchainePiece, pieces, police, screen);
+
+				}
 			}
 		}
 		
-		SDL_Flip(screen);
+		
 	}while (continuer);
 	
 	TTF_CloseFont(police); /* Doit être avant TTF_Quit() */
@@ -203,15 +252,15 @@ int **createTable(int nbLin, int nbCol){
 }
 
 
-GameMatrix* newGameMatrix(SDL_Surface *screen)
+GameMatrix* newGameMatrix(SDL_Surface *screen, int matrixHeight, int matrixWidth)
 {
 	int i = 0,j = 0;
 	
 	/** Crée la surface de jeu **/
 	GameMatrix *surface = malloc(sizeof(GameMatrix));
 	/// Dimensions de la grille de jeu
-	surface->height = 22;
-	surface->width = 10;
+	surface->height = matrixHeight;
+	surface->width = matrixWidth;
 	surface->surf = createTable(surface->height, surface->width);
 	
 	// Calcul de la largeur d'un bloc en fonction des dimensions de la fenêtre

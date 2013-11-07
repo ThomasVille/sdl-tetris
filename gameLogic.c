@@ -1,6 +1,6 @@
-void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5])
+void addPiece(GameMatrix *surface, int pieces[NB_PIECES][5][5], int index)
 {
-	int index = rand()%NB_PIECES;
+	
 	int x, y, i = 1;	
 	int posX = surface->width/2, posY = 1;
 	
